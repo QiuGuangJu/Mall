@@ -143,6 +143,32 @@
     <nav-footer></nav-footer>
   </div>
 </template>
+
+<script>
+  import NavHeader from './../components/Header'
+  import NavFooter from './../components/Footer'
+  import NavBread from './../components/Bread'
+  import Modal from './../components/Modal'
+  import axios from 'axios'
+
+  export default {
+    data() {
+      return {}
+    },
+    mounted() {
+      this.init();
+    },
+    computed: {},
+    components: {
+      NavHeader,
+      NavFooter,
+      NavBread,
+      Modal
+    },
+    methods: {}
+  }
+</script>
+
 <style>
   .input-sub,.input-add{
     min-width: 40px;
@@ -167,29 +193,3 @@
     text-align: center;
   }
 </style>
-<script>
-    import NavHeader from './../components/NavHeader'
-    import NavFooter from './../components/NavFooter'
-    import NavBread from './../components/NavBread'
-    import Modal from './../components/Modal'
-    import axios from 'axios'
-    export default{
-        data(){
-            return{
-
-            }
-        },
-        mounted(){
-            this.init();
-        },
-        computed:{
-        },
-        components:{
-          NavHeader,
-          NavFooter,
-          NavBread,
-          Modal
-        },
-        methods:{}
-    }
-</script>

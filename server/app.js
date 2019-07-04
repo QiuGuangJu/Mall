@@ -9,7 +9,7 @@ var indexRouter = require('./routes/index');
 var users = require('./routes/users');
 
 var app = express();
-
+app.listen("3000")
 let arr = []
 for (let i = 0; i < 1000; i++) {
   arr.push(`num${Math.random()}`)
