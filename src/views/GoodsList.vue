@@ -88,7 +88,7 @@
   import NavBread from '@/components/Bread'
   import Modal from '@/components/Modal'
   import Axios from 'axios'
-
+  import  router from '@/router/'
   export default {
     data() {
       return {
@@ -142,7 +142,7 @@
     },
     methods: {
       showCart(){
-        console.log('进入购物车!')
+        router.push("/cart")
       },
       handleHidden(){
         this.mdShow = false
@@ -234,5 +234,5 @@
   }
 </script>
 
-<style lang="stylus" scoped>
+<style scoped>
 </style>

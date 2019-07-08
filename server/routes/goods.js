@@ -3,7 +3,7 @@ const router = express.Router()
 const mongoose = require('mongoose')
 const Goods = require('../models/goods')
 
-mongoose.connect('mongodb://127.0.0.1:27017/Mall')
+mongoose.connect('mongodb://127.0.0.1:27017/Mall',{useNewUrlParser: true})
 
 mongoose.connection.on('connected', () => {
   console.log("MongoDB connected success")
@@ -63,8 +63,6 @@ router.get("/", (req, res, next) => {
 
   let goodsModel = Goods.find(params).skip(skip).limit(pageSize)
   goodsModel.sort({'salePrice': sort})
-
-
   goodsModel.exec((err, doc) => {
     if (err) {
       res.json({

@@ -5,6 +5,7 @@ import App from './App'
 import router from './router'
 import VueLazyLoad from 'vue-lazyload'
 import VueInfiniteScroll from 'vue-infinite-scroll'
+import store from './store'
 
 Vue.use(VueInfiniteScroll)
 
@@ -14,12 +15,19 @@ Vue.use(VueLazyLoad, {
 })
 
 
+
 Vue.config.productionTip = false
+
+import './assets/css/base.css'
+import './assets/css/login.css'
+import './assets/css/checkout.css'
+import './assets/css/product.css'
 
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
+  store,
   router,
   components: { App },
-  template: '<App/>'
+  template: '<App/>',
 })

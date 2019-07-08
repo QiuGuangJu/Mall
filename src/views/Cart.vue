@@ -1,7 +1,6 @@
 <template>
   <div>
     <nav-header>
-
     </nav-header>
     <nav-bread>
       <span>My Cart</span>
@@ -66,7 +65,8 @@
               <li v-for="item in cartList">
                 <div class="cart-tab-1">
                   <div class="cart-item-check">
-                    <a href="javascipt:;" class="checkbox-btn item-check-btn" v-bind:class="{'check':item.checked=='1'}" @click="editCart('checked',item)">
+                    <a href="javascipt:;" class="checkbox-btn item-check-btn" v-bind:class="{'check':item.checked=='1'}"
+                       @click="editCart('checked',item)">
                       <svg class="icon icon-ok">
                         <use xlink:href="#icon-ok"></use>
                       </svg>
@@ -80,13 +80,13 @@
                   </div>
                 </div>
                 <div class="cart-tab-2">
-                  <div class="item-price">{{item.salePrice | currency('$')}}</div>
+                  <div class="item-price">{{item.salePrice}}</div>
                 </div>
                 <div class="cart-tab-3">
                   <div class="item-quantity">
                     <div class="select-self select-self-open">
                       <div class="select-self-area">
-                        <a class="input-sub" @click="editCart('minu',item)">-</a>
+                        <a class="input-sub" @click="editCart('minus',item)">-</a>
                         <span class="select-ipt">{{item.productNum}}</span>
                         <a class="input-add" @click="editCart('add',item)">+</a>
                       </div>
@@ -94,11 +94,11 @@
                   </div>
                 </div>
                 <div class="cart-tab-4">
-                  <div class="item-price-total">{{(item.productNum*item.salePrice) | currency('$') }}</div>
+                  <div class="item-price-total">{{item.salePrice * item.productNum}}</div>
                 </div>
                 <div class="cart-tab-5">
                   <div class="cart-item-opration">
-                    <a href="javascript:;" class="item-edit-btn" @click="delCartConfirm(item)">
+                    <a href="javascript:;" class="item-edit-btn" @click="showModal(item)">
                       <svg class="icon icon-del">
                         <use xlink:href="#icon-del"></use>
                       </svg>
@@ -112,9 +112,9 @@
         <div class="cart-foot-wrap">
           <div class="cart-foot-inner">
             <div class="cart-foot-l">
-              <div class="item-all-check">
-                <a href="javascipt:;" @click="toggleCheckAll">
-                  <span class="checkbox-btn item-check-btn" v-bind:class="{'check':checkAllFlag}">
+              <div class="item-all-check" @click="checkAll">
+                <a href="javascipt:;">
+                  <span class="checkbox-btn item-check-btn">
                       <svg class="icon icon-ok"><use xlink:href="#icon-ok"/></svg>
                   </span>
                   <span>Select all</span>
@@ -123,21 +123,21 @@
             </div>
             <div class="cart-foot-r">
               <div class="item-total">
-                Item total: <span class="total-price">{{totalPrice | currency('$')}}</span>
+                Item total: <span class="total-price">{{totalPrice}}</span>
               </div>
               <div class="btn-wrap">
-                <a class="btn btn--red" v-bind:class="{'btn--dis':checkedCount==0}" @click="checkOut">Checkout</a>
+                <a class="btn btn--red" @click="checkout">Checkout</a>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <Modal :mdShow="modalConfirm" @close="closeModal">
-      <p slot="message">你确认要删除此条数据吗?</p>
+    <Modal v-show="modalConfirm">
+      <p slot="msg">你确认要删除此条数据吗?</p>
       <div slot="btnGroup">
-        <a class="btn btn--m" href="javascript:;" @click="delCart">确认</a>
-        <a class="btn btn--m btn--red" href="javascript:;" @click="modalConfirm = false">关闭</a>
+        <a class="btn btn&#45;&#45;m" href="javascript:;" @click="deleteConfirm">确认</a>
+        <a class="btn btn&#45;&#45;m btn&#45;&#45;red" href="javascript:;" @click="modalConfirm=false">关闭</a>
       </div>
     </Modal>
     <nav-footer></nav-footer>
@@ -150,27 +150,112 @@
   import NavBread from './../components/Bread'
   import Modal from './../components/Modal'
   import axios from 'axios'
+  import store from '../store'
+  import {UPDATE_COUNT} from '../store/mutationsTypes'
+  import router from '../router'
 
   export default {
     data() {
-      return {}
+      return {
+        target: null,
+        cartList: [],
+        modalConfirm: false
+      }
+    },
+    beforeCreate() {
+      //axios.get("/checklogin").then(res=>console.log(res))
     },
     mounted() {
-      this.init();
+      this.init()
     },
-    computed: {},
+    computed: {
+      totalPrice() {
+        let sum = 0
+        this.cartList.forEach(item => {
+          if (item.checked == 1) {
+            sum += item.salePrice * item.productNum
+          }
+        })
+        return sum
+      }
+    },
     components: {
       NavHeader,
       NavFooter,
       NavBread,
       Modal
     },
-    methods: {}
+    methods: {
+      init() {
+        axios.get('/users/cart')
+          .then(res => {
+            if (res.status === 200) {
+              if (res.data.status === 1) {
+                router.push('/')
+              } else {
+                this.cartList = res.data.result.data.cartList
+              }
+            }
+          })
+      },
+      updateCount(num) {
+        store.commit(UPDATE_COUNT, num)
+      },
+      editCart(flag, item) {
+        switch (flag) {
+          case "add":
+            item.productNum++
+            break
+          case "minus":
+            item.productNum = item.productNum > 1 ? item.productNum - 1 : 1
+            break
+          case "checked":
+            item.checked = item.checked == "1" ? 0 : 1
+        }
+        let _this = this
+        axios.post("/users/editcart", {
+          params: {
+            productId: item.productId,
+            productNum: item.productNum,
+            checked: item.checked
+          }
+        })
+          .then(res => {
+            if (res.status === 200 && res.data.status === 0) {
+              _this.init()
+              //this.updateCount(item.productNum)
+            }
+          })
+      },
+      showModal(item) {
+        this.modalConfirm = true
+        this.target = item
+      },
+      deleteConfirm() {
+        let _this = this
+        axios.post('/users/deleteitem', {
+          params: {
+            productId: this.target.productId
+          }
+        })
+          .then(res => {
+            if (res.status === 200 && res.data.status === 0) {
+              _this.init()
+              _this.modalConfirm = false
+            }
+          })
+      },
+      checkAll() {
+      },
+      checkout() {
+        router.push('/address')
+      }
+    }
   }
 </script>
 
 <style>
-  .input-sub,.input-add{
+  .input-sub, .input-add {
     min-width: 40px;
     height: 100%;
     border: 0;
@@ -181,13 +266,15 @@
     display: inline-block;
     background: #f0f0f0;
   }
-  .item-quantity .select-self-area{
-    background:none;
+
+  .item-quantity .select-self-area {
+    background: none;
     border: 1px solid #f0f0f0;
   }
-  .item-quantity .select-self-area .select-ipt{
+
+  .item-quantity .select-self-area .select-ipt {
     display: inline-block;
-    padding:0 3px;
+    padding: 0 3px;
     width: 30px;
     min-width: 30px;
     text-align: center;
